@@ -3,7 +3,8 @@ import "./App.css";
 import { data } from "./data";
 import Navbar from "./components/Navbar";
 import MovieCard from "./components/MovieCard";
-import {addMovies} from "./actions/index"
+import { addMovies } from "./actions/index";
+import {setShowFavourites} from "./actions/index"
 // import reactDom from "react-dom";
 
 class App extends React.Component {
@@ -19,22 +20,41 @@ class App extends React.Component {
 
     console.log("after state", store.getState());
   }
+  isMovieFavourite = (movie) => {
+    const { favourites } = this.props.store.getState();
+    const index = favourites.indexOf(movie);
+    if (index !== -1) {
+      return true;
+    }
+    return false;
+  };
+
+  onChangeTab=(value)=>{
+    this.props.store.dispatch(setShowFavourites(value))
+  }
   render() {
     // const props=this.props;
-    const movies = this.props.store.getState();
-    console.log("render");
+    const { list ,favourites,showFavourites} = this.props.store.getState();
+    console.log("render", this.props.store.getState());
+    const displayMovies=showFavourites?favourites:list
     return (
       <div className="App">
         <Navbar />
         <div className="main">
           <div className="tabs">
-            <div className="tab">Movies</div>
-            <div className="tab">Favourites</div>
+            <div className={`tab ${showFavourites ? '' : 'active-tabs'}`} onClick={()=>this.onChangeTab(false)}>Movies</div>
+            <div className={`tab ${showFavourites ? 'active-tabs' : ''}`} onClick={()=>this.onChangeTab(true)}>Favourites</div>
           </div>
           <div className="list">
-            {movies.map((movie, index) => (
-              <MovieCard movie={movie} key={`movies-${index}`} />
+            {displayMovies.map((movie, index) => (
+              <MovieCard
+                movie={movie}
+                key={`movies-${index}`}
+                dispatch={this.props.store.dispatch}
+                isFavourite={this.isMovieFavourite(movie)}
+              />
             ))}
+            {displayMovies.length===0?<div className="no-movies">No Movies to Display</div>: null}
           </div>
         </div>
       </div>
