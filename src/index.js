@@ -1,14 +1,41 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { createStore } from 'redux';
-import reducer from './reducers'
+import React from "react";
+import ReactDOM from "react-dom";
+import { createStore, applyMiddleware } from "redux";
+import rootReducer from "./reducers";
 
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import thunk from "redux-thunk";
 
-const store=createStore(reducer);
-console.log('store',store);
+//curried form of function logger
+
+// const logger=function({dispatch,getState}){
+//   return function(next){
+//     return function(action){
+//       console.log('Action_Type = ',action.type);
+//       next(action);
+//     }
+//   }
+// }
+
+const logger = ({ dispatch, getState }) => (next) => (action) => {
+  if (typeof action !== "function") {
+    console.log("Action_Type = ", action.type);
+  }
+  next(action);
+};
+
+// const thunk=({ dispatch, getState }) => (next) => (action) => {
+//   if(typeof action==='function'){
+//     action(dispatch);
+//     return;
+//   }
+//   next(action);
+// };
+
+const store = createStore(rootReducer, applyMiddleware(logger, thunk));
+console.log("store", store);
 // console.log('before state',store.getState());
 
 // store.dispatch({
@@ -18,12 +45,11 @@ console.log('store',store);
 
 // console.log('after state',store.getState());
 
-
 ReactDOM.render(
   <React.StrictMode>
     <App store={store} />
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("root")
 );
 
 // If you want to start measuring performance in your app, pass a function
